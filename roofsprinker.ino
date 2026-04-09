@@ -2,27 +2,30 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-#define DHTPIN 2          
-#define DHTTYPE DHT22     
-#define PUMP_PIN 8        
+#define DHTPIN 2
+#define DHTTYPE DHT11
+#define PUMP_PIN 8
 
-#define HUMIDITY_THRESHOLD 80.0 // for testing only 
-#define TEMP_THRESHOLD 20.0 // for testing only
+#define HUMIDITY_THRESHOLD 50.0  // for testing only
+#define TEMP_THRESHOLD 37.0      // for testing only
 
 DHT dht(DHTPIN, DHTTYPE);
-LiquidCrystal_I2C lcd(0x27, 16, 2); 
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 void setup() {
   pinMode(PUMP_PIN, OUTPUT);
   digitalWrite(PUMP_PIN, LOW);
 
   Serial.begin(9600);
+  Wire.begin();                 
   dht.begin();
-  
+  delay(2000);                  
+
   lcd.init();
   lcd.backlight();
-  lcd.setCursor(0,0);
+  lcd.setCursor(0, 0);
   lcd.print("Roof Sprinkler");
+  delay(2000);                  
 }
 
 void loop() {
@@ -30,24 +33,24 @@ void loop() {
   float temperature = dht.readTemperature();
 
   if (isnan(humidity) || isnan(temperature)) {
-    Serial.println("No input");
-    lcd.setCursor(0,1);
+    Serial.println("Sensor error");
+    lcd.setCursor(0, 1);
     lcd.print("Sensor Error  ");
     delay(2000);
     return;
   }
 
-  lcd.setCursor(0,0);
-  lcd.print("Temperature:");
+  lcd.setCursor(0, 0);
+  lcd.print("Temp: ");
   lcd.print(temperature, 1);
-  lcd.print("C ");
+  lcd.print("C   ");
 
-  lcd.setCursor(0,1);
-  lcd.print("Hum:");
+  lcd.setCursor(0, 1);
+  lcd.print("Hum: ");
   lcd.print(humidity, 1);
-  lcd.print("%    "); 
+  lcd.print("%    ");
 
-  if (humidity < HUMIDITY_THRESHOLD || temperature > TEMP_THRESHOLD) {
+  if (temperature > TEMP_THRESHOLD) {
     digitalWrite(PUMP_PIN, HIGH);
     Serial.println("Pump ON");
   } else {
@@ -55,5 +58,11 @@ void loop() {
     Serial.println("Pump OFF");
   }
 
-  delay(1000); // for testing
+//Remove when needed for proper demonstration
+/*#define TEMP_THRESHOLD_PRACTICAL 38.0
+// humidity not used
+if (temperature > TEMP_THRESHOLD_PRACTICAL) {
+  digitalWrite(PUMP_PIN, HIGH);
+}*/
+  delay(2000);                 
 }
