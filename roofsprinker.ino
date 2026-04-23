@@ -8,6 +8,8 @@
 
 #define HUMIDITY_THRESHOLD 60.0  // for testing only
 #define TEMP_THRESHOLD 36.0      // for testing only
+float lastValidHumidity = 0.0;
+float lastValidTemperature = 0.0;
 
 DHT dht(DHTPIN, DHTTYPE);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -34,9 +36,11 @@ void loop() {
 
   if (isnan(humidity) || isnan(temperature)) {
     Serial.println("Sensor error");
-    lcd.setCursor(0, 1);
-    lcd.print("Sensor Error  ");
-    delay(2000);
+    humidity = lastValidHumidity;
+    temperature = lastValidTemperature;
+  } else {
+    lastValidHumidity = humidity;
+    lastValidTemperature = temperature;
   }
   //displays the temperature and humidity on the LCD screen
   lcd.setCursor(0, 0);
@@ -48,7 +52,7 @@ void loop() {
   lcd.print("Hum: ");
   lcd.print(humidity, 1);
   lcd.print("%    ");
-  //controls the pump based on the humidity and temperature readings
+
   if (temperature > TEMP_THRESHOLD && humidity <= HUMIDITY_THRESHOLD) {
     digitalWrite(PUMP_PIN, HIGH);
     Serial.println("Pump ON");
@@ -56,5 +60,5 @@ void loop() {
     digitalWrite(PUMP_PIN, LOW);
     Serial.println("Pump OFF");
   }
-  delay(2000);                 
+  delay(500);                 
 }
